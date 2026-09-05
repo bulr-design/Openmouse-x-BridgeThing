@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#09090b">
+  <title>OpenMouse · Car Thing</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; min-height: 100%; background: #09090b; color: #f4f4f5; }
+    body { overflow: hidden; }
+    button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+    .app { width: 100vw; min-height: 100vh; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand { font-weight: 700; letter-spacing: -.02em; }
+    .badge { font-size: 11px; padding: 5px 8px; border: 1px solid #27272a; border-radius: 999px; color: #a1a1aa; white-space: nowrap; }
+    .status { border: 1px solid #27272a; border-radius: 12px; padding: 12px; background: #111113; }
+    .status strong { display: block; font-size: 14px; margin-bottom: 4px; }
+    .status span { color: #a1a1aa; font-size: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; flex: 1; }
+    .card { min-width: 0; border: 1px solid #27272a; border-radius: 12px; padding: 12px; background: #111113; display: flex; flex-direction: column; justify-content: space-between; }
+    .label { color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+    .value { font: 600 24px ui-monospace, SFMono-Regular, Menlo, monospace; margin-top: 5px; }
+    .connect { width: 100%; min-height: 52px; border-radius: 12px; background: #f4f4f5; color: #09090b; font-weight: 700; }
+    .connect:disabled { opacity: .55; cursor: default; }
+    .footer { color: #71717a; font-size: 10px; display: flex; justify-content: space-between; gap: 8px; }
+    @media (max-height: 480px) {
+      .app { padding: 10px; gap: 8px; }
+      .status { padding: 9px; }
+      .status strong { font-size: 12px; margin-bottom: 2px; }
+      .status span { font-size: 10px; }
+      .card { padding: 9px; }
+      .value { font-size: 20px; }
+      .connect { min-height: 44px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="brand">OpenMouse</div>
+      <div class="badge">CAR THING · 800×480</div>
+    </header>
+
+    <section class="status">
+      <strong id="headline">Car Thing layout test</strong>
+      <span id="detail">This proof of concept deliberately avoids the desktop 600px-height gate.</span>
+    </section>
+
+    <section class="grid" aria-label="Mouse settings preview">
+      <article class="card"><div class="label">DPI</div><div class="value">800</div></article>
+      <article class="card"><div class="label">Polling</div><div class="value">1000 Hz</div></article>
+      <article class="card"><div class="label">Profile</div><div class="value">1</div></article>
+    </section>
+
+    <button id="connect" class="connect">Test WebHID</button>
+
+    <footer class="footer">
+      <span id="viewport">Viewport: checking…</span>
+      <span>BridgeThing POC</span>
+    </footer>
+  </main>
+
+  <script>
+    const viewport = document.querySelector('#viewport');
+    const headline = document.querySelector('#headline');
+    const detail = document.querySelector('#detail');
+    const button = document.querySelector('#connect');
+
+    function updateViewport() {
+      viewport.textContent = `Viewport: ${window.innerWidth}×${window.innerHeight}`;
+    }
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+
+    button.addEventListener('click', async () => {
+      if (!('hid' in navigator)) {
+        headline.textContent = 'WebHID is unavailable';
+        detail.textContent = 'The browser loaded the app, but this Chromium environment does not expose navigator.hid.';
+        return;
+      }
+      try {
+        button.disabled = true;
+        button.textContent = 'Choose a mouse…';
+        const devices = await navigator.hid.requestDevice({ filters: [] });
+        if (devices.length) {
+          const device = devices[0];
+          headline.textContent = 'WebHID device found';
+          detail.textContent = `${device.productName || 'Unknown device'} · vendor ${device.vendorId} · product ${device.productId}`;
+          button.textContent = 'Device detected';
+        } else {
+          headline.textContent = 'No device selected';
+          detail.textContent = 'WebHID is available. No mouse was selected.';
+          button.disabled = false;
+          button.textContent = 'Test WebHID again';
+        }
+      } catch (error) {
+        headline.textContent = 'WebHID test failed';
+        detail.textContent = error instanceof Error ? error.message : String(error);
+        button.disabled = false;
+        button.textContent = 'Test WebHID again';
+      }
+    });
+  </script>
+</body>
+</html>
