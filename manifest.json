@@ -1,0 +1,7 @@
+{
+  "id": "6d4d7e0d-5a7e-4d6b-a4b8-7d7e9a5d4c21",
+  "name": "OpenMouse",
+  "version": "0.1.0",
+  "description": "OpenMouse control panel for the Spotify Car Thing via BridgeThing.",
+  "permissions": []
+}
